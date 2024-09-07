@@ -257,7 +257,7 @@ export function RunWorkflowButton({
   const [machine] = useSelectedMachine(machines);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, string | undefined>>({});
   const [open, setOpen] = useState(false);
 
   const schema = useMemo(() => {
@@ -274,7 +274,11 @@ export function RunWorkflowButton({
   const runWorkflow = async () => {
     console.log(values);
 
-    const val = Object.keys(values).length > 0 ? values : undefined;
+    const val = Object.keys(values).length > 0
+      ? Object.fromEntries(
+          Object.entries(values).filter(([_, v]) => v !== undefined)
+        ) as Record<string, string | number>
+      : undefined;
 
     const workflow_version_id = workflow?.versions.find(
       (x) => x.version === version,
@@ -324,7 +328,7 @@ export function RunWorkflowButton({
           <AutoForm
             formSchema={schema}
             values={values}
-            onValuesChange={setValues}
+            onValuesChange={(newValues) => setValues(newValues as Record<string, string | undefined>)}
             onSubmit={runWorkflow}
             className="px-1"
           >
